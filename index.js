@@ -18,14 +18,19 @@ async function convertPdfToImages(pdfPath, outputFolder) {
   try {
     await pdfPoppler.convert(pdfPath, opts);
     console.log(`Convertido: ${pdfPath}`);
+
     const files = await fs.readdir(outputFolder);
-    files.forEach(async (file) => {
-      const newFileName = file.replace(/^.*?-(\d+)\.jpg$/, "$1.jpg");
-      await fs.rename(
-        path.join(outputFolder, file),
-        path.join(outputFolder, newFileName)
-      );
-    });
+    for (const file of files) {
+      const match = file.match(/-(\d+)\.jpg$/); // Captura o número da página
+      if (match) {
+        const pageNumber = match[1].padStart(3, "0"); // Formata para 3 dígitos
+        const newFileName = `${pageNumber}.jpg`;
+        await fs.rename(
+          path.join(outputFolder, file),
+          path.join(outputFolder, newFileName)
+        );
+      }
+    }
   } catch (err) {
     console.error(`Erro ao converter ${pdfPath}:`, err);
   }
